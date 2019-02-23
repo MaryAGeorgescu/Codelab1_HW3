@@ -1,6 +1,9 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
+
 [System.Serializable] //you need this in order to have a bunch of clips
 //Usage: Have this attached to the listener
 //Intent: To create a source from which we can attach and play all of the audio sources
@@ -36,15 +39,51 @@ public class Sound
 }
 public class AudioManager : MonoBehaviour
 {
+    public static AudioManager instance;
     [SerializeField] 
     
     public Sound[] sounds;
+
+    private void Awake()
+    {
+        if (GetInstanceID() != null)
+        {
+            Debug.LogError("More than 1 AudioManager in the scene.");
+        }
+        else
+        {
+            instance = this;
+        }
+    }
     // Start is called before the first frame update
+    
+    
     void Start()
     {
-        
+        for (int i = 0; i < sounds.Length; i++)
+        {
+            GameObject _go = new GameObject("Sound_"+ i +"_" +sounds[i].name);
+            _go.transform.SetParent(this.transform);
+            sounds[i].SetSource(_go.AddComponent<AudioSource>());
+        }
+        //PlaySound("Respawn"); 
     }
 
+    //create a method for creating the sound
+
+    public void PlaySound(string _name)
+    {
+        for (int i = 0; i < sounds.Length; i++)//check which track it is, play the first song with that name
+        {
+            if (sounds[i].name == _name)
+            {
+                sounds[i].Play();
+                return; //exit out of the loop
+            }
+        }
+        //no sound with _name
+        Debug.LogWarning("AudioManager: Sound not found in sound list:," + _name);
+    }
     // Update is called once per frame
     void Update()
     {
